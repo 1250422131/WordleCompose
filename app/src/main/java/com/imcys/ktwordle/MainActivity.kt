@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -119,9 +120,9 @@ class MainActivity : ComponentActivity() {
             floatingActionButton = {
                 ExtendedFloatingActionButton(
                     onClick = {
-                      mCoroutineScope.launch {
-                          mainViewModel.sendIntent(HomeIntent.InitGrid)
-                      }
+                        mCoroutineScope.launch {
+                            mainViewModel.sendIntent(HomeIntent.InitGrid)
+                        }
                     },
                     icon = { Icon(Icons.Filled.Refresh, "Localized Description") },
                     text = { Text(text = "再来一次？") },
@@ -140,6 +141,8 @@ class MainActivity : ComponentActivity() {
                 Column(modifier = Modifier) {
                     //设置主要内容
                     HomeContent()
+                    //初始化游戏提示
+                    initGameOverTsp()
                 }
             }
 
@@ -204,6 +207,34 @@ class MainActivity : ComponentActivity() {
 
                 text = {
                     Text(text = "游戏成功")
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            mCoroutineScope.launch {
+                                mainViewModel.sendIntent(HomeIntent.InitGrid)
+                            }
+                        }
+                    ) {
+                        Text("确定")
+                    }
+                },
+            )
+        } else if (
+            mainViewModel.viewStates.gameState == 2
+        ) {
+            AlertDialog(
+                onDismissRequest = {
+                    mCoroutineScope.launch {
+                        mainViewModel.sendIntent(HomeIntent.InitGrid)
+                    }
+                },
+                title = {
+                    Text(text = "哦天呐")
+                },
+
+                text = {
+                    Text(text = "游戏失败")
                 },
                 confirmButton = {
                     TextButton(
@@ -374,7 +405,7 @@ class MainActivity : ComponentActivity() {
                 ),
             ) {
                 Column(modifier = Modifier.padding(7.dp)) {
-                    Icon(imageVector = Icons.Rounded.Close, contentDescription = "退格")
+                    Icon(imageVector = Icons.Rounded.ArrowBack, contentDescription = "退格")
                 }
             }
 
@@ -385,9 +416,8 @@ class MainActivity : ComponentActivity() {
     }
 
     @OptIn(ExperimentalFoundationApi::class)
-    private
     @Composable
-    fun MGrid(it: Grid) {
+    private fun MGrid(it: Grid) {
 
         Surface(
             shape = RoundedCornerShape(5.dp),
@@ -452,12 +482,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
 }

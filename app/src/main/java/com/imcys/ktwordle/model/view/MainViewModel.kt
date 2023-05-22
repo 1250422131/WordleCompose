@@ -26,7 +26,7 @@ data class HomeViewState(
     val thisCol: Int = 0,
     //0正常，1成功，2失败
     var gameState: Int = 0,
-    var keyGrid: MutableList<KeyGrid> = mutableListOf<KeyGrid>(
+    var keyGrid: MutableList<KeyGrid> = mutableListOf(
         KeyGrid("Q"),
         KeyGrid("W"),
         KeyGrid("E"),
@@ -53,7 +53,7 @@ data class HomeViewState(
         KeyGrid("B"),
         KeyGrid("N"),
         KeyGrid("M"),
-    )
+    ),
 ) : UiState
 
 
@@ -99,7 +99,25 @@ class MainViewModel : ComposeBaseViewModel<HomeViewState, HomeIntent>(HomeViewSt
     }
 
     private fun inputEnter() {
+        //没写完的判断
         if (viewStates.thisCol <= 4) return
+
+        var inputString = ""
+        viewStates.gridList[viewStates.thisRow].forEach {
+            inputString += it.letter
+        }
+
+        var isWordle = false
+        App.wordles.split(" ").apply {
+            forEach {
+                if (it == inputString) {
+                    isWordle = true
+                    return@apply
+                }
+            }
+        }
+
+        if (!isWordle) return
 
         val gridList: MutableList<MutableList<Grid>> =
             viewStates.gridList.map { it.toMutableList() }.toMutableList()
@@ -161,7 +179,7 @@ class MainViewModel : ComposeBaseViewModel<HomeViewState, HomeIntent>(HomeViewSt
 
         //正确的Num
         var zqNum = 0
-        viewStates.gridList[viewStates.thisRow].forEach {
+        gridList[viewStates.thisRow].forEach {
             if (it.state == GridStateEnum.CORRECT) zqNum++
         }
 
@@ -170,7 +188,16 @@ class MainViewModel : ComposeBaseViewModel<HomeViewState, HomeIntent>(HomeViewSt
             return
         }
 
-        if (viewStates.thisCol >= 5) return
+        //列数超出5了
+//        if (viewStates.thisCol >= 5) return
+
+        //失败了
+        if (viewStates.thisRow >= 5) {
+            viewStates = viewStates.copy(gameState = 2)
+            return
+        }
+
+
 
         viewStates = viewStates.copy(thisCol = 0, thisRow = viewStates.thisRow + 1)
         viewStates = viewStates.copy(gridList = gridList)
